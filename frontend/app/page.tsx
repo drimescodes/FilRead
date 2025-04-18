@@ -4,6 +4,8 @@ import Image from "next/image";
 import Hero from "@/public/illustrations.svg";
 import Link from "next/link";
 import { LucideHeart, Github, Twitter, Globe } from "lucide-react";
+import FeatureSection from "@/components/FeatureSection";
+import LpNewsletter from "@/components/LpNewsletter";
 
 const page = () => {
   return (
@@ -25,13 +27,13 @@ const page = () => {
               <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link
                   href="/auth/register"
-                  className="px-8 py-3 rounded-lg bg-filblue bg-opacity-80 text-white font-semibold hover:bg-filblue/80 transition-all hover:scale-105"
+                  className="px-8 py-3  bg-filblack hover:bg-filblack bg-opacity-90 text-filwhite font-semibold transition-all hover:scale-105"
                 >
                   Start Writing
                 </Link>
                 <Link
                   href="/blogs"
-                  className="px-8 py-3 rounded-lg border border-filblue border-opacity-80 font-semibold hover:border-filblue/80 transition-all hover:scale-105"
+                  className="px-8 py-3 text-filwhite border bg-filblue border-opacity-80 font-semibold hover:border-filblue/80 transition-all hover:scale-105"
                 >
                   Start Reading
                 </Link>
@@ -52,34 +54,39 @@ const page = () => {
         </div>
       </div>
 
+      <FeatureSection />
+      <LpNewsletter />
+
+      {/* Background Circles */}
+
       {/* Footer */}
-      <footer className="border-t border-readreblack-6 border-opacity-20">
+      <footer className="border-t border-filblack border-opacity-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2 text-readreblack-6">
-              <span>© 2024 Made with</span>
-              <LucideHeart className="w-4 h-4 text-readrepurple-5 animate-pulse" />
-              <span>by drimes</span>
+            <div className="flex items-center gap-2 text-filblack">
+              <span>© 2025 Made with</span>
+              <LucideHeart className="w-4 h-4 text-filblue animate-pulse" />
+              <span>by the CADS</span>
             </div>
             <div className="flex gap-6">
               <a
                 href="https://github.com/drimescodes"
                 target="_blank"
-                className="text-readreblack-6 hover:text-readrepurple-5 transition-colors"
+                className="text-filblack hover:text-filblue transition-colors"
               >
                 <Github className="w-5 h-5" />
               </a>
               <a
                 href="https://twitter.com/drimesbot"
                 target="_blank"
-                className="text-readreblack-6 hover:text-readrepurple-5 transition-colors"
+                className="text-filblack hover:text-filblue transition-colors"
               >
                 <Twitter className="w-5 h-5" />
               </a>
               <a
                 href="https://drimes-portfolio.vercel.app/"
                 target="_blank"
-                className="text-readreblack-6 hover:text-readrepurple-5 transition-colors"
+                className="text-filblack hover:text-filblue transition-colors"
               >
                 <Globe className="w-5 h-5" />
               </a>

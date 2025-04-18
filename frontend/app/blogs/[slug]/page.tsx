@@ -3,12 +3,14 @@ import { notFound } from 'next/navigation'
 import BlogPost from './BlogPost'
 import axios from 'axios'
 import { getApiUrl } from '@/utils/api'
+import {mockBlogs} from "@/app/data/mockBlog"
 
 // Types for the blog post data
 interface BlogPostData {
   title: string;
   description: string;
-  image: string;
+  // image: string;
+  image:any;
   author: string;
   date_added: string;
   tag: string;
@@ -22,16 +24,24 @@ type Props = {
 }
 
 // Fetch blog post data
+// async function getBlogPost(slug: string): Promise<BlogPostData | null> {
+//   try {
+//     const API_BASE_URL = getApiUrl();
+//     const res = await axios.get(`${API_BASE_URL}/blogs/${slug}`);
+//     return res.data;
+//   } catch (error) {
+//     console.error('Error fetching blog post:', error);
+//     return null;
+//   }
+// }
+
 async function getBlogPost(slug: string): Promise<BlogPostData | null> {
-  try {
-    const API_BASE_URL = getApiUrl();
-    const res = await axios.get(`${API_BASE_URL}/blogs/${slug}`);
-    return res.data;
-  } catch (error) {
-    console.error('Error fetching blog post:', error);
-    return null;
-  }
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  const post = mockBlogs.find((blog) => blog.slug === slug);
+  return post || null;
 }
+
+
 
 // Generate metadata for the blog post
 export async function generateMetadata(
@@ -59,7 +69,7 @@ export async function generateMetadata(
       authors: [post.author],
       images: [
         {
-          url: post.image,
+          url: post.image.src,
           width: 1200,
           height: 630,
           alt: post.title,
@@ -71,7 +81,7 @@ export async function generateMetadata(
       card: 'summary_large_image',
       title: post.title,
       description: post.description.substring(0, 160),
-      images: [post.image],
+      images: [post.image.src],
     },
   }
 }

@@ -9,14 +9,14 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   metadataBase: new URL('https://readre.vercel.app'),
   title: {
-    template: '%s | Readre',
-    default: 'Readre',
+    template: '%s | filRead',
+    default: 'filRead',
   },
   description: "you can read and write here",
   keywords: ['blog', 'reading', 'writing', 'technical contents'],
-  authors: [{ name: 'drimes' }],
+  authors: [{ name: 'CADS' }],
   creator: 'drimes',
-  publisher: 'Readre',
+  publisher: 'filRead',
   formatDetection: {
     email: false,
     address: false,
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
   },
 };
 
-const cookie = headers().get("cookie");
+// const cookie = headers().get("cookie");
 
 export default function RootLayout({
   children,

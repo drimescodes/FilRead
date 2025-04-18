@@ -5,7 +5,7 @@ import { useAccount } from 'wagmi';
 import BlogCard from '@/components/BlogCard';
 import Newsletter from '@/components/welcomeUI/Newsletter';
 import BlogCardSkeleton from '@/components/BlogCardSkeleton';
-
+import useSWR from 'swr';
 const WelcomePage = () => {
   const { address, isConnected } = useAccount();
   const router = useRouter();
@@ -43,12 +43,14 @@ const WelcomePage = () => {
   // Shorten wallet address for greeting
   const shortenAddress = (addr: string) =>
     addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : 'User';
-
+  const fetcher = (url) => fetch(url).then((res) => res.json());
+  const { data: profile } = useSWR(address ? `/api/profile?address=${address}` : null, fetcher);
+  const displayName = profile?.username || shortenAddress(address);
   return (
     <section className="pt-10 pb-8">
       <div className="flex items-center justify-between mb-8 px-4">
         <h1 className="text-2xl font-bold">
-          Welcome back, {shortenAddress(address)}!
+          Welcome back, {displayName}!
         </h1>
       </div>
       <div className="flex items-center justify-center gap-4 mb-6">
@@ -79,7 +81,7 @@ const WelcomePage = () => {
 
       <button
         onClick={() => router.push('/blogs')}
-        className="border border-readrepurple-5 flex mx-auto p-3 my-6 rounded-md text-readrepurple-5 hover:bg-readrepurple-5 hover:text-white transition-colors duration-300"
+        className="border border-filblue flex mx-auto p-3 my-6 rounded-md text-filblue hover:filblue hover:text-white transition-colors duration-300"
       >
         Explore More Articles
       </button>

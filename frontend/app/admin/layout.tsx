@@ -6,7 +6,7 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <section className="bg-readreblack-1 min-h-screen lg:p-4">
+    <section className="bg-filwhite min-h-screen lg:p-4">
       <Navbar />
       <div className="mx-auto mt-6 ">
         {children}

@@ -1,12 +1,12 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { useAuthStore } from '@/app/store/authStore';
 import Comment from '@/components/Comment';
 import LikeButton from '@/components/LikeButton';
 import { getApiUrl } from '@/utils/api';
 import { headers } from 'next/headers';
-
+import { useAccount } from 'wagmi';
 interface ClientBlogPostProps {
   content: string;
   blogSlug: string;
@@ -29,14 +29,15 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
   const [newCommentText, setNewCommentText] = useState('');
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
-  const { user, isAuthenticated, accessToken} = useAuthStore();
 
+  // const { user, isConnected, accessToken} = useAuthStore();
+  const { isConnected } = useAccount();
   const API_BASE_URL = getApiUrl();
 
   useEffect(() => {
     fetchComments();
     fetchLikeStatus();
-  }, [blogSlug, isAuthenticated]);
+  }, [blogSlug, isConnected]);
 
   const fetchComments = async () => {
     try {
@@ -49,7 +50,7 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
   };
 
   const fetchLikeStatus = async () => {
-    if (isAuthenticated) {
+    if (isConnected) {
       try {
         const response = await axios.get(`${API_BASE_URL}/blogs/${blogSlug}/like`);
         setIsLiked(response.data.liked);
@@ -61,7 +62,7 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
   };
 
   const handleAddComment = async () => {
-    if (!isAuthenticated) {
+    if (!isConnected) {
       alert('Please log in to add a comment.');
       return;
     }
@@ -93,7 +94,7 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
   };
 
   const handleLikeComment = async (id: number) => {
-    if (!isAuthenticated) {
+    if (!isConnected) {
       alert('Please log in to like a comment.');
       return;
     }
@@ -114,7 +115,7 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
   };
 
   const handleLikeBlog = async () => {
-    if (!isAuthenticated) {
+    if (!isConnected) {
       alert('Please log in to like the blog post.');
       return;
     }
@@ -133,10 +134,93 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
 
   console.log('comments', comments);
 
+
+  const articleRef = useRef<HTMLElement>(null);
+  const scrollInfo = useRef({
+    maxPct: 0,
+    activeSec: 0,
+    lastScroll: Date.now(),
+    tabActive: true,
+  });
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  // compute word count
+  const getWordCount = (html: string) =>
+    html.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).length;
+
+  // toast helper
+  const showToast = useCallback((msg: string) => {
+    setToastMsg(msg);
+    console.log(msg);
+    setTimeout(() => setToastMsg(null), 3000);
+  }, []);
+
+  useEffect(() => {
+    const articleEl = articleRef.current;
+    if (!articleEl) return;
+
+    const wordCount = getWordCount(content);
+    const readingTime = (wordCount / 200) * 60;      // seconds
+    const minTime = readingTime * 0.5;               // 50%
+    const fastScrollThreshold = readingTime * 0.2;   // 20%
+
+    const handleScroll = () => {
+      const scrollTop = articleEl.scrollTop;
+      const maxScrollTop = articleEl.scrollHeight - articleEl.clientHeight;
+      const pct = (scrollTop / maxScrollTop) * 100;
+      scrollInfo.current.maxPct = Math.max(scrollInfo.current.maxPct, pct);
+      scrollInfo.current.lastScroll = Date.now();
+
+      // if they jump to 80% within 20% of the predicted time → warn
+      if (
+        scrollInfo.current.maxPct >= 80 &&
+        scrollInfo.current.activeSec < fastScrollThreshold
+      ) {
+        showToast('You scrolled too quickly—please read more slowly.');
+      }
+    };
+
+    const tick = () => {
+      const delta = (Date.now() - scrollInfo.current.lastScroll) / 1000;
+      if (delta < 10 && scrollInfo.current.tabActive) {
+        scrollInfo.current.activeSec++;
+      }
+    };
+
+    const handleVisibility = () => {
+      scrollInfo.current.tabActive = !document.hidden;
+    };
+
+    articleEl.addEventListener('scroll', handleScroll);
+    document.addEventListener('visibilitychange', handleVisibility);
+    const timer = setInterval(tick, 1000);
+
+    return () => {
+      articleEl.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      clearInterval(timer);
+    };
+  }, [content, showToast]);
+
+  // invoked on “Claim Reward”
+  const checkIfRead = () => {
+    const { maxPct, activeSec } = scrollInfo.current;
+    const wordCount = getWordCount(content);
+    const readingTime = (wordCount / 200) * 60;
+    if (maxPct >= 80 && activeSec >= readingTime * 0.5) {
+      console.log('✅ Article read! Awarding points…');
+      // POST to server: reward endpoint
+    } else {
+      console.log('❌ Not enough engagement.');
+    }
+  };
+
   return (
-    <article className='min-h-screen bg-readreblack-1 text-white p-6'>
-      <div dangerouslySetInnerHTML={{ __html: content }} className="leading-relaxed mb-8 rendered-text" />
-      
+    <article className='min-h-screen  text-filblack p-6'>
+      <div ref={articleRef} dangerouslySetInnerHTML={{ __html: content }} className="leading-relaxed mb-8 rendered-text" />
+      <button onClick={checkIfRead} className="mt-4 p-2 bg-blue-500 text-white">
+        Claim Reward
+      </button>
       <LikeButton isLiked={isLiked} likeCount={likeCount} onLike={handleLikeBlog} />
       
       <div className="mt-12">
@@ -155,24 +239,24 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
             onDelete={handleDeleteComment}
             onEdit={handleEditComment}
             onLike={handleLikeComment}
-            isOwnComment={isAuthenticated && Number(user?.id) === comment.user_id}
+            isOwnComment={isConnected && Number(user?.id) === comment.user_id}
           />
         ))}
         <div className="mt-8">
           <textarea
             value={newCommentText}
             onChange={(e) => setNewCommentText(e.target.value)}
-            placeholder={isAuthenticated ? "Add a comment" : "Please log in to comment"}
-            className="w-full bg-readreblack-4 text-white p-2 rounded"
+            placeholder={isConnected ? "Add a comment" : "Please log in to comment"}
+            className="w-full bg-[#dadada] text-filblack p-2 rounded"
             rows={4}
-            disabled={!isAuthenticated}
+            disabled={!isConnected}
           />
           <button 
             onClick={handleAddComment} 
-            className='mt-4 py-2 px-4 bg-readrepurple-5 rounded-md hover:bg-readrepurple-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
-            disabled={!isAuthenticated}
+            className='mt-4 py-2 px-4 bg-filblue text-filwhite rounded-md hover:bg-readrepurple-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+            disabled={!isConnected}
           >
-            {isAuthenticated ? "Post Comment" : "Log in to Comment"}
+            {isConnected ? "Post Comment" : "Log in to Comment"}
           </button>
         </div>
       </div>

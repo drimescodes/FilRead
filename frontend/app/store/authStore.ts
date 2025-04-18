@@ -22,94 +22,42 @@ interface User {
 }
 
 interface AuthState {
-  user: User | null;
+  address: string | null;
+  isConnected: boolean;
   isAuthenticated: boolean;
   isLoading: boolean;
-  accessToken: string | null;
-  login: (token: string) => Promise<void>;
-  logout: () => Promise<void>;
-  checkAuth: () => Promise<boolean>;
+  username: string | null;
+  profilePicture: string | null;
+  signMessage: (message: string) => Promise<string>;
+  disconnect: () => void;
+  fetchProfile: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
+  address: null,
+  isConnected: false,
   isAuthenticated: false,
-  isLoading: true,
-  accessToken: null,
-
-  checkAuth: async () => {
-    try {
-      const response = await axios.get('/auth/me');
-      set({ 
-        user: response.data, 
-        isAuthenticated: true,
-        isLoading: false
-      });
-      return true;
-    } catch (error) {
-      set({ 
-        user: null, 
-        isAuthenticated: false,
-        isLoading: false 
-      });
-      return false;
-    }
+  isLoading: false,
+  username: null,
+  profilePicture: null,
+  signMessage: async (message: string) => {
+    // implement signMessage logic here
+    return '';
   },
-
- // Modify your login function to include a call to checkAuth
- login: async (token: string) => {
-  try {
-    const response = await axios.post('/auth/google', { token });
-    const { access_token, user } = response.data;
-    console.log('Received access token:', access_token);
-    set({ 
-      user,
-      accessToken: access_token, // Save the access token
-      isAuthenticated: true,
-      isLoading: false
-    });
-    // Check if the user is authenticated
-    await useAuthStore.getState().checkAuth();
-  } catch (error) {
-    set({ 
-      user: null, 
-      isAuthenticated: false,
-      isLoading: false 
-    });
-    throw error;
-  }
-},
-
-  logout: async () => {
-    try {
-      await axios.post('/auth/logout');
-      set({ 
-        user: null, 
-        isAuthenticated: false,
-        isLoading: false 
-      });
-    } catch (error) {
-      console.error('Logout failed:', error);
-      throw error;
+  disconnect: () => {
+    // implement disconnect logic here
+  },
+  fetchProfile: async () => {
+    const { address } = useAccount();
+    if (!address) return;
+    const { data } = await supabase
+      .from('users')
+      .select('username, profile_picture')
+      .eq('wallet_address', address)
+      .single();
+    if (data) {
+      set({ username: data.username, profilePicture: data.profile_picture });
     }
   },
 }));
 
-// Add axios interceptor for 401 responses
-axios.interceptors.response.use(
-  response => response,
-  async error => {
-    if (error.response?.status === 401) {
-      const authStore = useAuthStore.getState();
-      authStore.checkAuth().catch(() => {
-        // If checkAuth fails, we're truly unauthorized
-        useAuthStore.setState({ 
-          user: null, 
-          isAuthenticated: false,
-          isLoading: false
-        });
-      });
-    }
-    return Promise.reject(error);
-  }
-);

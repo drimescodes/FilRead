@@ -36,7 +36,7 @@ const BlogPostPreview: React.FC<BlogPostPreviewProps> = ({
   const imageSrc = getImageSrc();
   
   return (
-    <div className="bg-readreblack-1 text-white">
+    <div className="bg-filwhite text-filblack">
       {/* Header Section */}
       <header className="text-center py-8">
         <p className="text-readrepurple-5 uppercase">{tag}</p>
@@ -68,7 +68,7 @@ const BlogPostPreview: React.FC<BlogPostPreviewProps> = ({
 
         {/* Sidebar (simplified) */}
         <aside className="col-span-1 border-l pl-3">
-          <section className='bg-readreblack-6 p-4 rounded-lg mb-6'>
+          <section className='bg-readreblack-6 p-4 rounded-lg mb-6 text-filwhite'>
             <h2 className="text-xl font-bold mb-4">Subscribe To Our Newsletter</h2>
             {/* Simplified form for preview */}
             <p>Newsletter subscription form would appear here</p>

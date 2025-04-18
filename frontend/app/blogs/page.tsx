@@ -7,29 +7,49 @@ import useSWR from 'swr';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Spinner from '@/components/Spinner';
-const fetcher = (url: string) => axios.get(url).then(res => res.data);
+import {mockBlogs } from "@/app/data/mockBlog"
+// const fetcher = (url: string) => axios.get(url).then(res => res.data);
 
+const fetchBlogs = async (searchTerm) => {
+  await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate delay
+  if (searchTerm) {
+    return mockBlogs.filter((blog) =>
+      blog.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
+  return mockBlogs;
+};
 const PublicBlogs = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch] = useDebounce(searchTerm, 500);
 
   const [isSearching, setIsSearching] = useState(false);
 
+  // const { data: blogs, error } = useSWR(
+  //   `/blogs${debouncedSearch ? `?search=${debouncedSearch}` : ''}`,
+  //   fetcher,
+  //   {
+  //     onLoadingSlow: () => setIsSearching(true),
+  //     onSuccess: () => setIsSearching(false),
+  //     loadingTimeout: 400, // Show loading state after 400ms
+  //   }
+  // );
+  
   const { data: blogs, error } = useSWR(
-    `/blogs${debouncedSearch ? `?search=${debouncedSearch}` : ''}`,
-    fetcher,
+    `/blogs${debouncedSearch ? `?search=${debouncedSearch}` : ""}`,
+    () => fetchBlogs(debouncedSearch),
     {
       onLoadingSlow: () => setIsSearching(true),
       onSuccess: () => setIsSearching(false),
-      loadingTimeout: 400, // Show loading state after 400ms
+      loadingTimeout: 400,
     }
   );
 
   return (
-    <section className='bg-readreblack-1 mx-auto min-h-svh text-white '>
+    <section className='bg-filwhite mx-auto min-h-svh text-filblack '>
     <Navbar />
     
-      <h1 className="text-3xl font-bold mb-8 text-center text-white pt-4">Explore Our Blog</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center text-filblack pt-4">Explore Our Blog</h1>
       
       {/* Search Bar */}
       <div className="max-w-xl mx-auto mb-8 px-4">
@@ -38,7 +58,7 @@ const PublicBlogs = () => {
           placeholder="Search blogs..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-readrepurple-5 text-black"
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-filblue text-black"
         />
       </div>
 

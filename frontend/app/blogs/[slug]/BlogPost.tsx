@@ -8,7 +8,8 @@ import Footer from '@/components/Footer';
 interface BlogPostData {
   title: string;
   description: string;
-  image: string;
+  // image: string;
+  image:any;
   author: string;
   date_added: string;
   tag: string;
@@ -34,10 +35,10 @@ export default function BlogPost({ postData, params }: BlogPostProps) {
   });
 
   return (
-    <section className="bg-readreblack-1 text-white overflow-hidden">
+    <section className="bg-filwhite text-filblack overflow-hidden">
       <Navbar />
       <header className="text-center py-8">
-        <p className="text-readrepurple-5 uppercase">{postData.tag}</p>
+        <p className="text-filblue uppercase">{postData.tag}</p>
         <h1 className="text-4xl font-bold my-4">{postData.title}</h1>
         <p className="text-readreblack-4">{formattedDate} | {postData.reading_time} min read</p>
       </header>
@@ -60,7 +61,7 @@ export default function BlogPost({ postData, params }: BlogPostProps) {
         </div>
 
         <aside className="col-span-1 border-l pl-3">
-          <section className="bg-readreblack-6 p-4 rounded-lg mb-6">
+          <section className="bg-[#dadada] p-4 rounded-lg mb-6">
             <h2 className="text-xl font-bold mb-4">Subscribe To Our Newsletter</h2>
             <form>
               <input 
@@ -70,14 +71,14 @@ export default function BlogPost({ postData, params }: BlogPostProps) {
               />
               <button 
                 type="submit" 
-                className="w-full bg-readrepurple-5 p-2 rounded-lg"
+                className="w-full bg-filblue p-2 rounded-lg text-filwhite"
               >
                 Subscribe
               </button>
             </form>
           </section>
 
-          <section className="bg-readreblack-6 p-4 rounded-lg">
+          <section className="bg-[#dadada] p-4 rounded-lg">
             <p className="font-bold text-2xl">Share It On:</p>
           </section>
         </aside>

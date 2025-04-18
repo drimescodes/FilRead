@@ -22,6 +22,7 @@ const config = {
         "readreblack-1": "#0a0a0a",
         "filwhite": "#F9F9F9",
         "filblue": "#008CFF",
+        "filblack": "#020C15",
         "readreblack-2": "#171717",
         "readreblack-4": "#404040",
         "readreblack-6": "#737373",

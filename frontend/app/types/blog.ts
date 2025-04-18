@@ -7,7 +7,8 @@ export interface Blog {
     tag: string;
     reading_time: number;
     members_only: boolean;
-    image: string;
+    // image: string;
+    image:any;
     date_added: string;
     likes_count: number;
   }

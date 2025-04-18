@@ -10,7 +10,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({ isLiked, likeCount, onLike }) =
   return (
     <button 
       onClick={onLike} 
-      className="flex items-center space-x-2 text-readrepurple-5 hover:text-readrepurple-6 transition-colors"
+      className="flex items-center space-x-2 text-filblue hover:text-fil-blue/80 transition-colors"
     >
       <FaHeart className={isLiked ? "text-red-500" : ""} />
       <span>{likeCount} {likeCount === 1 ? 'Like' : 'Likes'}</span>

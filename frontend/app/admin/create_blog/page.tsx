@@ -132,12 +132,12 @@ const CreateBlog = () => {
       
       <div className=" mx-auto mt-6 p-3">
         <div className="flex justify-between items-center">
-          <h1 className="sm:text-3xl text-lg font-bold mb-6 text-readrepurple-5">
+          <h1 className="sm:text-3xl text-lg font-bold mb-6 text-filblue">
             Create a New Blog
           </h1>
           <button
             onClick={togglePreviewMode}
-            className="mb-4 bg-readrepurple-5 hover:bg-readrepurple-4 text-white p-2 rounded max-w-32 "
+            className="mb-4 bg-filblue hover:bg-readrepurple-4 text-white p-2 rounded max-w-32 "
           >
             {isPreviewMode ? "Edit Mode" : "Preview Mode"}
           </button>
@@ -152,7 +152,7 @@ const CreateBlog = () => {
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="bg-readreblack-6 bg-opacity-20 text-white p-6 rounded shadow-md max-w-6xl mx-auto"
+            className="bg-filwhite bg-opacity-70 text-filblack border border-filblack p-6 rounded shadow-md max-w-6xl mx-auto"
           >
             {error && <p className="text-red-500">{error}</p>}
             <div className="mb-4">
@@ -182,10 +182,10 @@ const CreateBlog = () => {
                 Tag
               </label>
               <Select value={tag} onValueChange={(value) => setTag(value)}>
-                <SelectTrigger className="w-full p-2 rounded bg-readreblack-6 bg-opacity-20">
+                <SelectTrigger className="w-full p-2 rounded bg-filblue bg-opacity-20">
                   <SelectValue placeholder="Select a tag" />
                 </SelectTrigger>
-                <SelectContent className="bg-readreblack-4 font-semibold text-xl h-72">
+                <SelectContent className="bg-filblue text-white  font-semibold text-xl h-72">
                   <SelectItem value="TECHNOLOGY">Technology</SelectItem>
                   <SelectItem value="DATA SCIENCE">Data Science</SelectItem>
                   <SelectItem value="AI / ML">AI / ML</SelectItem>
@@ -207,7 +207,7 @@ const CreateBlog = () => {
                 htmlFor="membersOnly"
                 className="block text-sm font-bold mb-2"
               >
-                Members Only
+                Premium Members Only
               </label>
               <input
                 id="membersOnly"
@@ -230,9 +230,9 @@ const CreateBlog = () => {
                   id="imageUpload"
                   type="file"
                   onChange={handleImageUpload}
-                  className="w-full p-2 rounded bg-readreblack-6 bg-opacity-20 opacity-0 absolute z-50 h-[100%] cursor-pointer"
+                  className="w-full p-2 rounded bg-filblue bg-opacity-20 opacity-0 absolute z-50 h-[100%] cursor-pointer"
                 />
-                <div className="w-full p-2 rounded bg-readreblack-6 bg-opacity-20 text-white cursor-pointer">
+                <div className="w-full p-2 rounded bg-filblue bg-opacity-20 text-filblack cursor-pointer">
                   {imageName
                     ? `Selected file: ${imageName}`
                     : "Choose an image"}
@@ -243,7 +243,7 @@ const CreateBlog = () => {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className={`bg-readrepurple-5 bg-opacity-80 text-white p-2 w-32 rounded hover:bg-readrepurple-5 ${loading ? "cursor-not-allowed opacity-80 flex items-center gap-2" : ""}`}
+                className={`bg-filblue text-white p-2 w-32 rounded ${loading ? "cursor-not-allowed opacity-80 flex items-center gap-2" : ""}`}
                 disabled={loading}
               >
                 {loading ? (
