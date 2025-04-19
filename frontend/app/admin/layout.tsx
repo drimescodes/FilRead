@@ -1,4 +1,7 @@
 import Navbar from "@/components/Navbar";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 export default function AdminLayout({
   children,
@@ -11,6 +14,17 @@ export default function AdminLayout({
       <div className="mx-auto mt-6 ">
         {children}
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </section>
   );
 }
