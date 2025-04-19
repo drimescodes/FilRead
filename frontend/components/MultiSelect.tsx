@@ -19,15 +19,17 @@ export default function MultiSelect({
 }: MultiSelectProps) {
   const [customTag, setCustomTag] = useState('');
 
-  const toggleTag = (tag: string) => {
+  const toggleTag = (e: React.MouseEvent, tag: string) => {
+    e.preventDefault(); // Prevent form submission
+    e.stopPropagation(); // Stop event bubbling
     const newSelected = selected.includes(tag)
       ? selected.filter((item) => item !== tag)
       : [...selected, tag];
     onChange(newSelected);
   };
 
-  const addCustomTag = (e: React.FormEvent) => {
-    e.preventDefault();
+  const addCustomTag = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent form submission
     const trimmedTag = customTag.trim();
     if (trimmedTag && !selected.includes(trimmedTag) && trimmedTag.length <= 50) {
       onChange([...selected, trimmedTag]);
@@ -35,7 +37,8 @@ export default function MultiSelect({
     }
   };
 
-  const removeTag = (tag: string) => {
+  const removeTag = (e: React.MouseEvent, tag: string) => {
+    e.preventDefault(); // Prevent form submission
     onChange(selected.filter((item) => item !== tag));
   };
 
@@ -55,7 +58,7 @@ export default function MultiSelect({
               >
                 {tag}
                 <button
-                  onClick={() => removeTag(tag)}
+                  onClick={(e) => removeTag(e, tag)}
                   className="text-white hover:text-gray-200 focus:outline-none"
                 >
                   <svg
@@ -87,7 +90,7 @@ export default function MultiSelect({
       </div>
 
       {/* Custom Tag Input */}
-      <form onSubmit={addCustomTag} className="mb-4">
+      <div className="mb-4">
         <div className="flex items-center gap-2">
           <input
             type="text"
@@ -98,7 +101,7 @@ export default function MultiSelect({
             maxLength={50}
           />
           <motion.button
-            type="submit"
+            onClick={addCustomTag}
             disabled={!customTag.trim()}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -107,14 +110,14 @@ export default function MultiSelect({
             Add
           </motion.button>
         </div>
-      </form>
+      </div>
 
       {/* Predefined Tags */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
         {options.map((option) => (
           <motion.button
             key={option}
-            onClick={() => toggleTag(option)}
+            onClick={(e) => toggleTag(e, option)}
             whileHover={{ scale: 1.05, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}
             whileTap={{ scale: 0.95 }}
             className={`p-3 rounded-lg text-sm border border-gray-200/50 shadow-sm transition text-center ${
@@ -129,4 +132,4 @@ export default function MultiSelect({
       </div>
     </div>
   );
-};
+}

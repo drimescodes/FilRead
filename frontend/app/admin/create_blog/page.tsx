@@ -1,6 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -23,77 +23,174 @@ const CreateBlog = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState<string[]>([]);
-  const [visibility, setVisibility] = useState(0); // 0=Public, 1=Private, 2=Draft
+  const [visibility, setVisibility] = useState(0);
   const [image, setImage] = useState<File | null>(null);
   const [imageName, setImageName] = useState('');
   const [imageCid, setImageCid] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const router = useRouter();
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setImage(e.target.files[0]);
-      setImageName(e.target.files[0].name);
+  const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) {
+      setError('No image selected');
+      toast.error('No image selected');
+      return;
+    }
+
+    const selectedImage = e.target.files[0];
+    if (!selectedImage.type.startsWith('image/')) {
+      setError('Please select a valid image file (e.g., JPG, PNG)');
+      toast.error('Please select a valid image file');
+      return;
+    }
+
+    if (selectedImage.size > 5 * 1024 * 1024) {
+      setError('Image size exceeds 5MB limit');
+      toast.error('Image size exceeds 5MB limit');
+      return;
+    }
+
+    setImage(selectedImage);
+    setImageName(selectedImage.name);
+    setImageCid(null);
+    setError(null);
+    setImageUploading(true);
+
+    try {
+      console.log('Uploading image:', selectedImage.name, 'Size:', selectedImage.size); // Debug
+      const cid = await retryUploadToIPFS(selectedImage, 3);
+      console.log('Image CID:', cid); // Debug
+      setImageCid(cid);
+      toast.success('Image uploaded to IPFS');
+    } catch (err: any) {
+      console.error('Image upload error:', err.message || err); // Debug
+      setError('Failed to upload image to IPFS: ' + (err.message || 'Unknown error'));
+      toast.error('Failed to upload image to IPFS');
+      setImageCid(null);
+      setImage(null);
+      setImageName('');
+    } finally {
+      setImageUploading(false);
+    }
+  }, []);
+
+  // Retry logic for IPFS uploads
+  const retryUploadToIPFS = async (data: File | string, maxRetries: number): Promise<string> => {
+    let attempt = 0;
+    while (attempt < maxRetries) {
       try {
-        const cid = await uploadToIPFS(e.target.files[0]);
-        setImageCid(cid);
+        return await uploadToIPFS(data);
       } catch (err) {
-        setError('Failed to upload image to IPFS');
-        toast.dismiss(); // Clear existing toasts
-        toast.error('Failed to upload image to IPFS');
+        attempt++;
+        console.warn(`IPFS upload attempt ${attempt} failed:`, err); // Debug
+        if (attempt === maxRetries) throw err;
+        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
       }
     }
+    throw new Error('Max retries reached');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    toast.dismiss(); // Clear existing toasts
+    
+    // Check if image is still uploading
+    if (imageUploading) {
+      setError('Image is still uploading. Please wait.');
+      toast.error('Image is still uploading. Please wait.');
+      return;
+    }
 
+    // Validate form fields
     if (!title.trim()) {
       setError('Title cannot be empty');
-      setLoading(false);
       toast.error('Title cannot be empty');
       return;
     }
 
     if (!content.trim()) {
       setError('Content cannot be empty');
-      setLoading(false);
       toast.error('Content cannot be empty');
       return;
     }
 
     if (!imageCid) {
       setError('Please upload an image');
-      setLoading(false);
       toast.error('Please upload an image');
       return;
     }
 
+    if (visibility < 0 || visibility > 2) {
+      setError('Invalid visibility setting');
+      toast.error('Invalid visibility setting');
+      return;
+    }
+
+    // Start loading state
+    setLoading(true);
+    setError(null);
+    toast.dismiss();
+
     try {
       // Upload content to IPFS
-      const contentCid = await uploadToIPFS(content);
+      console.log('Starting content upload to IPFS...');
+      const contentCid = await retryUploadToIPFS(content, 3);
+      console.log('Content uploaded successfully:', contentCid);
+
+      // Create metadata with content CID
+      console.log('Creating metadata...');
+      const metadata = JSON.stringify({ contentCid });
+      const metadataCid = await retryUploadToIPFS(metadata, 3);
+      console.log('Metadata uploaded successfully:', metadataCid);
+
+      // Prepare post data
+      const postData = {
+        title,
+        content: '', // Not used on-chain, stored in lighthouseMetadata
+        tags,
+        visibility,
+        imageCid,
+        lighthouseMetadata: metadataCid,
+      };
 
       // Create post on-chain
-      await createPost(title, contentCid, tags, visibility);
+      console.log('Creating post on-chain...');
+      await createPost(postData);
+      console.log('Post created successfully!');
 
+      // Success handling
       toast.success('Blog post created successfully!', {
         position: 'top-right',
         autoClose: 3000,
         onClose: () => {
-          router.push('/admin/manage-blogs'); // Navigate after toast closes
+          router.push('/admin/manage-blogs');
         },
       });
-    } catch (err) {
-      console.error('Error creating blog:', err);
-      setError('Failed to create blog post. Please try again.');
-      toast.error('Failed to create blog post. Please try again.');
+    } catch (err: any) {
+      console.error('Error creating blog:', {
+        message: err.message,
+        stack: err.stack,
+        name: err.name
+      });
+      
+      // Handle specific errors
+      let errorMessage = 'Failed to create blog post: ';
+      if (err.message.includes('User not registered')) {
+        errorMessage += 'Please register your account first.';
+      } else if (err.message.includes('Invalid Lighthouse CID')) {
+        errorMessage += 'Invalid image CID.';
+      } else {
+        errorMessage += err.message || 'Unknown error';
+      }
+      
+      // Update UI with error
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
+      // Always reset loading state
       setLoading(false);
     }
   };
@@ -102,7 +199,13 @@ const CreateBlog = () => {
     setIsPreviewMode(!isPreviewMode);
   };
 
-  // Tag options
+  const clearImage = useCallback(() => {
+    setImage(null);
+    setImageName('');
+    setImageCid(null);
+    setError(null);
+  }, []);
+
   const tagOptions = [
     'Technology',
     'Data Science',
@@ -204,18 +307,36 @@ const CreateBlog = () => {
                   type="file"
                   accept="image/*"
                   onChange={handleImageUpload}
-                  className="w-full p-3 rounded-lg bg-white border border-gray-300 text-gray-800 opacity-0 absolute z-10"
+                  disabled={imageUploading}
+                  className="w-full p-3 rounded-lg bg-white border border-gray-300 text-gray-800 opacity-0 absolute z-10 cursor-pointer"
                 />
-                <div className="w-full p-3 rounded-lg bg-white border border-gray-300 text-gray-800 flex items-center">
-                  {imageName ? `Selected: ${imageName}` : 'Choose an image'}
+                <div className="w-full p-3 rounded-lg bg-white border border-gray-300 text-gray-800 flex items-center justify-between">
+                  <span>
+                    {imageUploading
+                      ? 'Uploading...'
+                      : imageName
+                      ? `Selected: ${imageName}`
+                      : 'Choose an image'}
+                  </span>
+                  {imageName && !imageUploading && (
+                    <button
+                      type="button"
+                      onClick={clearImage}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      Clear
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
             <div className="flex justify-end">
               <button
                 type="submit"
-                disabled={loading}
-                className={`bg-blue-500 text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-blue-400 border border-gray-200/50 shadow-sm transition ${loading ? 'opacity-80 cursor-not-allowed' : ''}`}
+                disabled={loading || imageUploading}
+                className={`bg-blue-500 text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-blue-400 border border-gray-200/50 shadow-sm transition ${
+                  loading || imageUploading ? 'opacity-80 cursor-not-allowed' : ''
+                }`}
               >
                 {loading ? (
                   <>
@@ -230,7 +351,6 @@ const CreateBlog = () => {
           </form>
         )}
       </div>
-
     </div>
   );
 };

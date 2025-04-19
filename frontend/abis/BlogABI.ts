@@ -43,6 +43,44 @@ const BlogABI = [
     "anonymous": false
   },
   {
+    "name": "LighthouseCIDAdded",
+    "type": "event",
+    "inputs": [
+      {
+        "name": "postId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "cid",
+        "type": "string",
+        "indexed": true,
+        "internalType": "string"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "name": "LighthouseMetadataUpdated",
+    "type": "event",
+    "inputs": [
+      {
+        "name": "postId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "metadata",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
+      }
+    ],
+    "anonymous": false
+  },
+  {
     "name": "PostCreated",
     "type": "event",
     "inputs": [
@@ -298,24 +336,41 @@ const BlogABI = [
     "type": "function",
     "inputs": [
       {
-        "name": "title",
-        "type": "string",
-        "internalType": "string"
-      },
-      {
-        "name": "content",
-        "type": "string",
-        "internalType": "string"
-      },
-      {
-        "name": "tags",
-        "type": "string[]",
-        "internalType": "string[]"
-      },
-      {
-        "name": "visibility",
-        "type": "uint8",
-        "internalType": "uint8"
+        "name": "postData",
+        "type": "tuple",
+        "components": [
+          {
+            "name": "title",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "content",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "tags",
+            "type": "string[]",
+            "internalType": "string[]"
+          },
+          {
+            "name": "visibility",
+            "type": "uint8",
+            "internalType": "uint8"
+          },
+          {
+            "name": "imageCid",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "lighthouseMetadata",
+            "type": "string",
+            "internalType": "string"
+          }
+        ],
+        "internalType": "struct Blog.PostData"
       }
     ],
     "outputs": [],
@@ -457,6 +512,16 @@ const BlogABI = [
           },
           {
             "name": "onChainHash",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "imageCid",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "lighthouseMetadata",
             "type": "string",
             "internalType": "string"
           },
@@ -730,6 +795,16 @@ const BlogABI = [
         "internalType": "string"
       },
       {
+        "name": "imageCid",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "lighthouseMetadata",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
         "name": "exists",
         "type": "bool",
         "internalType": "bool"
@@ -838,6 +913,24 @@ const BlogABI = [
     "stateMutability": "nonpayable"
   },
   {
+    "name": "updateLighthouseMetadata",
+    "type": "function",
+    "inputs": [
+      {
+        "name": "postId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "metadata",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
     "name": "updatePost",
     "type": "function",
     "inputs": [
@@ -847,24 +940,41 @@ const BlogABI = [
         "internalType": "uint256"
       },
       {
-        "name": "title",
-        "type": "string",
-        "internalType": "string"
-      },
-      {
-        "name": "content",
-        "type": "string",
-        "internalType": "string"
-      },
-      {
-        "name": "tags",
-        "type": "string[]",
-        "internalType": "string[]"
-      },
-      {
-        "name": "visibility",
-        "type": "uint8",
-        "internalType": "uint8"
+        "name": "postData",
+        "type": "tuple",
+        "components": [
+          {
+            "name": "title",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "content",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "tags",
+            "type": "string[]",
+            "internalType": "string[]"
+          },
+          {
+            "name": "visibility",
+            "type": "uint8",
+            "internalType": "uint8"
+          },
+          {
+            "name": "imageCid",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "lighthouseMetadata",
+            "type": "string",
+            "internalType": "string"
+          }
+        ],
+        "internalType": "struct Blog.PostData"
       }
     ],
     "outputs": [],
@@ -972,6 +1082,25 @@ const BlogABI = [
       }
     ],
     "stateMutability": "view"
+  },
+  {
+    "name": "validateLighthouseCID",
+    "type": "function",
+    "inputs": [
+      {
+        "name": "cid",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "pure"
   }
 ];
 

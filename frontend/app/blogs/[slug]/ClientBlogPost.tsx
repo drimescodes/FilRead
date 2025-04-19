@@ -1,12 +1,11 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
-import { useAuthStore } from '@/app/store/authStore';
+import { useAccount } from 'wagmi';
 import Comment from '@/components/Comment';
 import LikeButton from '@/components/LikeButton';
 import { getApiUrl } from '@/utils/api';
-import { headers } from 'next/headers';
-import { useAccount } from 'wagmi';
+
 interface ClientBlogPostProps {
   content: string;
   blogSlug: string;
@@ -29,20 +28,20 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
   const [newCommentText, setNewCommentText] = useState('');
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
-
-  // const { user, isConnected, accessToken} = useAuthStore();
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const API_BASE_URL = getApiUrl();
 
   useEffect(() => {
     fetchComments();
-    fetchLikeStatus();
+    if (isConnected) {
+      fetchLikeStatus();
+    }
   }, [blogSlug, isConnected]);
 
   const fetchComments = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/blogs/${blogSlug}/comments`);
-      console.log('Fetched comments:', response.data);
+      console.log('Fetched comments:', response.data); // Debug
       setComments(response.data);
     } catch (error) {
       console.error('Error fetching comments:', error);
@@ -50,24 +49,24 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
   };
 
   const fetchLikeStatus = async () => {
-    if (isConnected) {
-      try {
-        const response = await axios.get(`${API_BASE_URL}/blogs/${blogSlug}/like`);
-        setIsLiked(response.data.liked);
-        setLikeCount(response.data.likes_count);
-      } catch (error) {
-        console.error('Error fetching like status:', error);
-      }
+    try {
+      const response = await axios.get(`${API_BASE_URL}/blogs/${blogSlug}/like`);
+      setIsLiked(response.data.liked);
+      setLikeCount(response.data.likes_count);
+    } catch (error) {
+      console.error('Error fetching like status:', error);
     }
   };
 
   const handleAddComment = async () => {
     if (!isConnected) {
-      alert('Please log in to add a comment.');
+      alert('Please connect your wallet to add a comment.');
       return;
     }
     try {
-      const response = await axios.post(`${API_BASE_URL}/blogs/${blogSlug}/comments`, { text: newCommentText });
+      const response = await axios.post(`${API_BASE_URL}/blogs/${blogSlug}/comments`, {
+        text: newCommentText,
+      });
       setComments([...comments, response.data]);
       setNewCommentText('');
     } catch (error) {
@@ -78,7 +77,7 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
   const handleDeleteComment = async (id: number) => {
     try {
       await axios.delete(`${API_BASE_URL}/blogs/${blogSlug}/comments/${id}`);
-      setComments(comments.filter(comment => comment.id !== id));
+      setComments(comments.filter((comment) => comment.id !== id));
     } catch (error) {
       console.error('Error deleting comment:', error);
     }
@@ -86,8 +85,10 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
 
   const handleEditComment = async (id: number, text: string) => {
     try {
-      const response = await axios.put(`${API_BASE_URL}/blogs/${blogSlug}/comments/${id}`, { text });
-      setComments(comments.map(comment => comment.id === id ? response.data : comment));
+      const response = await axios.put(`${API_BASE_URL}/blogs/${slug}/comments/${id}`, {
+        text,
+      });
+      setComments(comments.map((comment) => (comment.id === id ? response.data : comment)));
     } catch (error) {
       console.error('Error editing comment:', error);
     }
@@ -95,20 +96,18 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
 
   const handleLikeComment = async (id: number) => {
     if (!isConnected) {
-      alert('Please log in to like a comment.');
+      alert('Please connect your wallet to like a comment.');
       return;
     }
     try {
-      const response = await axios.post(`${API_BASE_URL}/blogs/${blogSlug}/comments/${id}/like`, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}` 
-        }
-      });
-      setComments(comments.map(comment => 
-        comment.id === id 
-          ? { ...comment, liked: response.data.liked, likes_count: response.data.likes_count } 
-          : comment
-      ));
+      const response = await axios.post(`${API_BASE_URL}/blogs/${blogSlug}/comments/${id}/like`);
+      setComments(
+        comments.map((comment) =>
+          comment.id === id
+            ? { ...comment, liked: response.data.liked, likes_count: response.data.likes_count }
+            : comment
+        )
+      );
     } catch (error) {
       console.error('Error liking comment:', error);
     }
@@ -116,24 +115,17 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
 
   const handleLikeBlog = async () => {
     if (!isConnected) {
-      alert('Please log in to like the blog post.');
+      alert('Please connect your wallet to like the blog post.');
       return;
     }
     try {
-      const response = await axios.post(`${API_BASE_URL}/blogs/${blogSlug}/like`,{
-        headers: {
-          'Authorization': `Bearer ${accessToken}` 
-        }
-      });
+      const response = await axios.post(`${API_BASE_URL}/blogs/${blogSlug}/like`);
       setIsLiked(response.data.liked);
       setLikeCount(response.data.likes_count);
     } catch (error) {
       console.error('Error liking blog:', error);
     }
   };
-
-  console.log('comments', comments);
-
 
   const articleRef = useRef<HTMLElement>(null);
   const scrollInfo = useRef({
@@ -144,11 +136,11 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
   });
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
-  // compute word count
+  // Compute word count
   const getWordCount = (html: string) =>
     html.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).length;
 
-  // toast helper
+  // Toast helper
   const showToast = useCallback((msg: string) => {
     setToastMsg(msg);
     console.log(msg);
@@ -160,9 +152,9 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
     if (!articleEl) return;
 
     const wordCount = getWordCount(content);
-    const readingTime = (wordCount / 200) * 60;      // seconds
-    const minTime = readingTime * 0.5;               // 50%
-    const fastScrollThreshold = readingTime * 0.2;   // 20%
+    const readingTime = (wordCount / 200) * 60; // seconds
+    const minTime = readingTime * 0.5; // 50%
+    const fastScrollThreshold = readingTime * 0.2; // 20%
 
     const handleScroll = () => {
       const scrollTop = articleEl.scrollTop;
@@ -171,7 +163,7 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
       scrollInfo.current.maxPct = Math.max(scrollInfo.current.maxPct, pct);
       scrollInfo.current.lastScroll = Date.now();
 
-      // if they jump to 80% within 20% of the predicted time → warn
+      // If they jump to 80% within 20% of the predicted time → warn
       if (
         scrollInfo.current.maxPct >= 80 &&
         scrollInfo.current.activeSec < fastScrollThreshold
@@ -202,7 +194,7 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
     };
   }, [content, showToast]);
 
-  // invoked on “Claim Reward”
+  // Invoked on “Claim Reward”
   const checkIfRead = () => {
     const { maxPct, activeSec } = scrollInfo.current;
     const wordCount = getWordCount(content);
@@ -216,16 +208,20 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
   };
 
   return (
-    <article className='min-h-screen  text-filblack p-6'>
-      <div ref={articleRef} dangerouslySetInnerHTML={{ __html: content }} className="leading-relaxed mb-8 rendered-text" />
+    <article className="min-h-screen text-filblack p-6">
+      <div
+        ref={articleRef}
+        dangerouslySetInnerHTML={{ __html: content }}
+        className="leading-relaxed mb-8 rendered-text"
+      />
       <button onClick={checkIfRead} className="mt-4 p-2 bg-blue-500 text-white">
         Claim Reward
       </button>
       <LikeButton isLiked={isLiked} likeCount={likeCount} onLike={handleLikeBlog} />
-      
+
       <div className="mt-12">
         <h2 className="text-2xl font-bold mb-4">Comments</h2>
-        {comments.map(comment => (
+        {comments.map((comment) => (
           <Comment
             key={comment.id}
             id={comment.id}
@@ -239,24 +235,24 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
             onDelete={handleDeleteComment}
             onEdit={handleEditComment}
             onLike={handleLikeComment}
-            isOwnComment={isConnected && Number(user?.id) === comment.user_id}
+            isOwnComment={isConnected && address && Number(address) === comment.user_id}
           />
         ))}
         <div className="mt-8">
           <textarea
             value={newCommentText}
             onChange={(e) => setNewCommentText(e.target.value)}
-            placeholder={isConnected ? "Add a comment" : "Please log in to comment"}
+            placeholder={isConnected ? 'Add a comment' : 'Please connect your wallet to comment'}
             className="w-full bg-[#dadada] text-filblack p-2 rounded"
             rows={4}
             disabled={!isConnected}
           />
-          <button 
-            onClick={handleAddComment} 
-            className='mt-4 py-2 px-4 bg-filblue text-filwhite rounded-md hover:bg-readrepurple-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+          <button
+            onClick={handleAddComment}
+            className="mt-4 py-2 px-4 bg-filblue text-filwhite rounded-md hover:bg-readrepurple-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={!isConnected}
           >
-            {isConnected ? "Post Comment" : "Log in to Comment"}
+            {isConnected ? 'Post Comment' : 'Connect Wallet to Comment'}
           </button>
         </div>
       </div>
