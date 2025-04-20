@@ -67,7 +67,7 @@ const Navbar = () => {
           {!isConnected && (
             <button
               onClick={openConnectModal}
-              className="text-sm bg-filblue bg-opacity-80 hover:bg-filblue font-bold py-3 px-4 transition-colors text-filwhite"
+              className="hidden md:inline-block text-sm bg-filblue bg-opacity-80 hover:bg-filblue font-bold py-3 px-4 transition-colors text-filwhite"
             >
               Connect Wallet
             </button>

@@ -35,7 +35,7 @@ export default function NewsletterSignup() {
               placeholder="@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="flex-1 px-4 py-2 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500  w-[13rem] sm:w-[48rem]"
+              className="flex-1 px-4 py-2 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500  max-w-[13rem] sm:max-w-[48rem]"
               required
             />
             <button
