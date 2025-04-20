@@ -185,6 +185,10 @@ FilRead is developed and maintained by the CADS Team:
 ## 📝 Version History
 
 - v1.0.0 - Initial Release
+- v1.1.0 - Enhanced Security Features
+- v1.2.0 - Performance Optimizations
+- v1.3.0 - New Feature Release
+=======
 
 ## 🎯 Future Goals
 
