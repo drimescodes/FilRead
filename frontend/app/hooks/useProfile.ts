@@ -8,7 +8,7 @@ export interface Profile {
 }
 
 export function useProfile(address?: string) {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [totalReads, setTotalReads] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +20,7 @@ export function useProfile(address?: string) {
     setLoading(true);
     Promise.all([
       supabase
-        .from<Profile>("users")
+        .from("users")
         .select("username, profile_picture")
         .eq("wallet_address", address.toLowerCase())
         .single(),
@@ -59,26 +59,22 @@ export function useProfile(address?: string) {
             contentType: file.type,
           });
         if (upErr) throw upErr;
+        const { data: { publicUrl } } = supabase.storage.from("profile-pictures").getPublicUrl(path);
 
-        const {
-          data: { publicUrl },
-          error: urlErr,
-        } = supabase.storage.from("profile-pictures").getPublicUrl(path);
-        if (urlErr) throw urlErr;
         pictureUrl = publicUrl;
       }
 
       // 2️⃣ Upsert user row, using wallet_address as the conflict target
       const { error: dbErr } = await supabase
-        .from("users")
-        .upsert(
-          {
-            wallet_address: address.toLowerCase(),
-            username,
-            profile_picture: pictureUrl,
-          },
-          { onConflict: ["wallet_address"] }
-        );
+  .from("users")
+  .upsert(
+    {
+      wallet_address: address.toLowerCase(),
+      username,
+      profile_picture: pictureUrl,
+    },
+    { onConflict: "wallet_address" } // Pass wallet_address as a string
+  );
       if (dbErr) throw dbErr;
 
       setProfile({ username, profile_picture: pictureUrl });

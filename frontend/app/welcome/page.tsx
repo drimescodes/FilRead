@@ -43,9 +43,9 @@ const WelcomePage = () => {
   // Shorten wallet address for greeting
   const shortenAddress = (addr: string) =>
     addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : 'User';
-  const fetcher = (url) => fetch(url).then((res) => res.json());
+  const fetcher = (url:any) => fetch(url).then((res) => res.json());
   const { data: profile } = useSWR(address ? `/api/profile?address=${address}` : null, fetcher);
-  const displayName = profile?.username || shortenAddress(address);
+  const displayName = profile?.username || shortenAddress(address || '');
   return (
     <section className="pt-10 pb-8">
       <div className="flex items-center justify-between mb-8 px-4">

@@ -16,7 +16,7 @@ const Navbar = () => {
   const { openConnectModal } = useConnectModal();
 
   const pathname = usePathname();
-  const isActive = (href) => pathname === href;
+  const isActive = (href:string) => pathname === href;
 
   return (
     <header className="w-full bg-filwhite text-black sticky top-0 z-50 border-b border-b-readreblack-4">

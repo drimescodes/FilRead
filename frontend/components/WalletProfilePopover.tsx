@@ -19,7 +19,12 @@ const WalletProfilePopover = () => {
   const { color: backgroundColor, emoji } = emojiAvatarForAddress(address ?? "");
 
   // Fetch profile data using SWR
-  const fetcher = (url) => fetch(url).then((res) => res.json());
+  interface Profile {
+    username?: string;
+    profile_picture?: string;
+  }
+
+  const fetcher = (url: string): Promise<Profile> => fetch(url).then((res) => res.json());
   const { data: profile } = useSWR(address ? `/api/profile?address=${address}` : null, fetcher);
   console.log("Profile Data:", profile);
   // Fetch balance
@@ -34,7 +39,7 @@ const WalletProfilePopover = () => {
     addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : "";
 
   // Determine display name and avatar
-  const displayName = profile?.username || shortenAddress(address);
+  const displayName = profile?.username || shortenAddress(address ?? "");
   const avatar = profile?.profile_picture ? (
     <Image
       src={profile.profile_picture}

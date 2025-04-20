@@ -26,12 +26,11 @@ export default function SettingsPage() {
 }
 
 function StatsSection() {
-  const periods = ['today', 'weekly', 'monthly', 'all']
-  // const [period, setPeriod] = useState<typeof periods[number]>('today')
-  // const { data, error } = useSWR<StatsPoint[]>(`/api/stats?range=${period}`, fetcher)
-  const [period, setPeriod] = useState<typeof periods[number]>('today')
+  const periods = ['today', 'weekly', 'monthly', 'all'] as const
+  type Period = typeof periods[number]
+  const [period, setPeriod] = useState<Period>('today')
   let error = false
-  const data = dummyStats[period]
+  const data = dummyStats[period as Period]
 
   return (
     <section>

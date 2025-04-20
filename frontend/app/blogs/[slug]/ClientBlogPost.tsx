@@ -48,7 +48,7 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
     }
   };
 
-  const fetchLikeStatus = async () => {
+  const fetchLikeStatus = useCallback(async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/blogs/${blogSlug}/like`);
       setIsLiked(response.data.liked);
@@ -56,7 +56,7 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
     } catch (error) {
       console.error('Error fetching like status:', error);
     }
-  };
+  }, [API_BASE_URL, blogSlug]);
 
   const handleAddComment = async () => {
     if (!isConnected) {
@@ -84,15 +84,15 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
   };
 
   const handleEditComment = async (id: number, text: string) => {
-    try {
-      const response = await axios.put(`${API_BASE_URL}/blogs/${slug}/comments/${id}`, {
-        text,
-      });
-      setComments(comments.map((comment) => (comment.id === id ? response.data : comment)));
-    } catch (error) {
-      console.error('Error editing comment:', error);
-    }
-  };
+  try {
+    const response = await axios.put(`${API_BASE_URL}/blogs/${blogSlug}/comments/${id}`, {
+      text,
+    });
+    setComments(comments.map((comment) => (comment.id === id ? response.data : comment)));
+  } catch (error) {
+    console.error('Error editing comment:', error);
+  }
+};
 
   const handleLikeComment = async (id: number) => {
     if (!isConnected) {
@@ -127,7 +127,7 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
     }
   };
 
-  const articleRef = useRef<HTMLElement>(null);
+  const articleRef = useRef<HTMLDivElement>(null);
   const scrollInfo = useRef({
     maxPct: 0,
     activeSec: 0,
@@ -235,7 +235,7 @@ const ClientBlogPost: React.FC<ClientBlogPostProps> = ({ content, blogSlug }) =>
             onDelete={handleDeleteComment}
             onEdit={handleEditComment}
             onLike={handleLikeComment}
-            isOwnComment={isConnected && address && Number(address) === comment.user_id}
+            isOwnComment={!!(isConnected && address && Number(address) === comment.user_id)}
           />
         ))}
         <div className="mt-8">

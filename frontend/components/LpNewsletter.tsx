@@ -5,7 +5,7 @@ import speaker from "@/public/speaker.png";
 export default function NewsletterSignup() {
   const [email, setEmail] = useState('');
   
-  const handleSubmit = (e) => {
+  const handleSubmit = (e:any) => {
     e.preventDefault();
     // Handle form submission logic here
     console.log('Email submitted:', email);

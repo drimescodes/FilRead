@@ -223,8 +223,8 @@ const CreateBlog = () => {
   ];
 
   return (
-    <div className="bg-white min-h-screen p-4 sm:p-6">
-      <div className="max-w-7xl mx-auto bg-white">
+    <div className="bg-filwhite min-h-screen p-4 sm:p-6">
+      <div className="max-w-7xl mx-auto bg-filwhite">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             Create a New Blog
