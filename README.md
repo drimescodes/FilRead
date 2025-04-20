@@ -209,3 +209,9 @@ For business inquiries or partnership opportunities:
 - Special thanks to our contributors and community members
 - Support from the Filecoin ecosystem
 - Inspiration from decentralized web pioneers
+
+## 📝 Links
+- [Project Live Link](https://fil-read.vercel.app/)
+- [Figma Link](https://www.figma.com/design/Wh6O2YmKeTcizzYnfFnLg6?fuid=1491199782904345262&prev-plan-id=1491199785264063794&prev-plan-type=team&prev-selected-view=recentsAndSharing)
+- [Demo Link](https://www.loom.com/share/d91bc5fe04cb4ff3b71ec192c1b893d3)
+- [Pitch Deck Link](https://drive.google.com/file/d/1kS7gJLCyrXvVVhDdF1q8OdCWmAN1AzV7/view?usp=sharing)
