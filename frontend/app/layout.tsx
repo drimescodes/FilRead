@@ -7,13 +7,13 @@ import { headers } from "next/headers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://readre.vercel.app'),
+  metadataBase: new URL('https://fil-read.vercel.app'),
   title: {
     template: '%s | filRead',
     default: 'filRead',
   },
   description: "you can read and write here",
-  keywords: ['blog', 'reading', 'writing', 'technical contents'],
+  keywords: ['blog', 'reading', 'writing', 'technical contents','web3', 'filecoin', 'decentralized'],
   authors: [{ name: 'CADS' }],
   creator: 'drimes',
   publisher: 'filRead',
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en',
-    url: 'https://readre.vercel.app',
+    url: 'https://fil-read.vercel.app',
     siteName: 'Readre',
     images: [{
       url: '/og-image.png',
